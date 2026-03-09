@@ -2,7 +2,6 @@ import { getCurrentUser } from '@/lib/auth';
 import { SectionCard } from '@/components/section-card';
 import { prisma } from '@/lib/db';
 import { planPriceLabel } from '@/lib/plans';
-import type { Plan } from '@/lib/plans';
 
 const plans = [
   { label: 'PRO', price: '$29/mo', desc: 'Live alerts plus Email/Telegram channels.' },
@@ -32,7 +31,7 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
           <div className="space-y-3 text-slate-300">
             <div>Name: {user?.name}</div>
             <div>Email: {user?.email}</div>
-            <div>Plan: {user?.plan} · {user ? planPriceLabel(user.plan as Plan) : '$0'}</div>
+            <div>Plan: {user?.plan} · {user ? planPriceLabel(user.plan) : '$0'}</div>
             <div>Role: {user?.role}</div>
             <div>Subscription status: {subscription?.status ?? 'none'}</div>
             <div>Cancel at period end: {subscription?.cancelAtPeriodEnd ? 'Yes' : 'No'}</div>

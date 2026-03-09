@@ -1,4 +1,4 @@
-import type { AlertChannel, DeliveryStatus } from './plans';
+import { AlertChannel, DeliveryStatus } from '@prisma/client';
 import { prisma } from './db';
 import { BRAND } from './brand';
 import { renderAlertEmail, renderTelegramAlert } from './notify-templates';
@@ -50,12 +50,12 @@ async function sendEmail(email: string, subject: string, html: string) {
 export async function createDeliveryLog(input: {
   userId: string;
   alertId?: string;
-  channel: string;
+  channel: AlertChannel;
   destination?: string;
   subject?: string;
   body: string;
   error?: string;
-  status?: string;
+  status?: DeliveryStatus;
 }) {
   return prisma.alertDelivery.create({
     data: {

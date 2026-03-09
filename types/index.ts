@@ -1,8 +1,8 @@
 /**
  * Tipos compartilhados do SignalStack AI
- * Re-exporta os tipos definidos em lib/plans.ts para conveniência
+ * Re-exporta os tipos do Prisma para conveniência
  */
-export type { Plan, UserRole, AlertChannel, AlertSeverity, DeliveryStatus } from '../lib/plans';
+export type { Plan, UserRole, AlertChannel, AlertSeverity, DeliveryStatus } from '@prisma/client';
 export type { SessionPayload } from '../lib/auth';
 export type { Candle } from '../lib/market';
 

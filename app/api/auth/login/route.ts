@@ -2,7 +2,6 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { signSession, setAuthCookie } from '@/lib/auth';
 import { consumeRateLimit } from '@/lib/rate-limit';
-import type { UserRole, Plan } from '@/lib/plans';
 
 export async function POST(request: Request) {
   const ip = request.headers.get('x-forwarded-for') || 'local';
@@ -21,7 +20,7 @@ export async function POST(request: Request) {
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) return Response.redirect(new URL('/login?error=invalid', request.url));
 
-  const token = signSession({ sub: user.id, email: user.email, role: user.role as UserRole, plan: user.plan as Plan });
+  const token = signSession({ sub: user.id, email: user.email, role: user.role, plan: user.plan });
   await setAuthCookie(token);
   return Response.redirect(new URL('/dashboard', request.url));
 }

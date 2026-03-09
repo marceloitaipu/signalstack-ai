@@ -1,8 +1,7 @@
-export type Plan = 'FREE' | 'PRO' | 'DESK';
-export type AlertChannel = 'IN_APP' | 'EMAIL' | 'TELEGRAM';
-export type AlertSeverity = 'STANDARD' | 'HIGH' | 'CRITICAL';
-export type DeliveryStatus = 'PENDING' | 'SENT' | 'FAILED';
-export type UserRole = 'USER' | 'ADMIN';
+import { Plan, AlertChannel } from '@prisma/client';
+
+export type { Plan, AlertChannel } from '@prisma/client';
+export type { AlertSeverity, DeliveryStatus, UserRole } from '@prisma/client';
 
 export const PLAN_LIMITS: Record<Plan, { alerts: number; channels: AlertChannel[] }> = {
   FREE: { alerts: 3, channels: ['IN_APP'] },
@@ -17,5 +16,5 @@ export function planPriceLabel(plan: Plan) {
 }
 
 export function canUseChannel(plan: Plan, channel: string) {
-  return (PLAN_LIMITS[plan]?.channels as string[])?.includes(channel) ?? false;
+  return (PLAN_LIMITS[plan].channels as string[]).includes(channel);
 }

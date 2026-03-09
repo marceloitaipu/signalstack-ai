@@ -3,7 +3,6 @@ import { prisma } from '@/lib/db';
 import { signSession, setAuthCookie } from '@/lib/auth';
 import { consumeRateLimit } from '@/lib/rate-limit';
 import { createPlainToken, hashToken, expiresInHours } from '@/lib/tokens';
-import type { UserRole, Plan } from '@/lib/plans';
 
 export async function POST(request: Request) {
   const ip = request.headers.get('x-forwarded-for') || 'local';
@@ -36,7 +35,7 @@ export async function POST(request: Request) {
     }
   });
 
-  const token = signSession({ sub: user.id, email: user.email, role: user.role as UserRole, plan: user.plan as Plan });
+  const token = signSession({ sub: user.id, email: user.email, role: user.role, plan: user.plan });
   await setAuthCookie(token);
   return Response.redirect(new URL(`/onboarding?welcome=1&verify_token=${verifyToken}`, request.url));
 }

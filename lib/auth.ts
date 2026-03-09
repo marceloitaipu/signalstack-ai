@@ -2,15 +2,13 @@ import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from './db';
-import type { Plan, UserRole } from './plans';
-
 const COOKIE_NAME = 'signalstack_token';
 
 export type SessionPayload = {
   sub: string;
   email: string;
-  role: UserRole;
-  plan: Plan;
+  role: 'USER' | 'ADMIN';
+  plan: 'FREE' | 'PRO' | 'DESK';
 };
 
 export function signSession(payload: SessionPayload) {

@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "lint": "next lint",
     "db:push": "prisma db push",
@@ -30,6 +31,7 @@
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "autoprefixer": "^10.4.20",
+    "pg": "^8.20.0",
     "postcss": "^8.4.49",
     "prisma": "^5.22.0",
     "sharp": "^0.34.5",

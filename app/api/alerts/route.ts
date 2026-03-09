@@ -3,7 +3,6 @@ import { ok, fail } from '@/lib/api';
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { canUseChannel, PLAN_LIMITS } from '@/lib/plans';
-import type { Plan } from '@/lib/plans';
 
 export async function GET() {
   const session = await getSession();
@@ -24,7 +23,7 @@ export async function POST(request: Request) {
   const severity = String(formData.get('severity') || 'STANDARD').toUpperCase();
 
   const existingCount = await prisma.alert.count({ where: { userId: session.sub } });
-  if (existingCount >= PLAN_LIMITS[session.plan as Plan].alerts) {
+  if (existingCount >= PLAN_LIMITS[session.plan].alerts) {
     redirect('/alerts?error=limit');
   }
 

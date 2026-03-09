@@ -2,13 +2,12 @@ import { prisma } from '@/lib/db';
 import { requireSession } from '@/lib/auth';
 import { SectionCard } from '@/components/section-card';
 import { PLAN_LIMITS } from '@/lib/plans';
-import type { Plan } from '@/lib/plans';
 
 export default async function AlertsPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
   const session = await requireSession();
   const params = (await searchParams) || {};
   const alerts = await prisma.alert.findMany({ where: { userId: session.sub }, orderBy: { createdAt: 'desc' } });
-  const limits = PLAN_LIMITS[session.plan as Plan];
+  const limits = PLAN_LIMITS[session.plan];
 
   return (
     <div className="space-y-8">
