@@ -2,7 +2,7 @@ import { prisma } from '@/lib/db';
 import { requireSession } from '@/lib/auth';
 import { SectionCard } from '@/components/section-card';
 import { getLocale, t } from '@/lib/i18n';
-import { demoCandles } from '@/lib/market';
+import { fetchCandles } from '@/lib/market';
 import { runAIBacktest } from '@/lib/ai';
 
 export default async function BacktestsPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
@@ -14,9 +14,11 @@ export default async function BacktestsPage({ searchParams }: { searchParams?: P
   // If AI backtest was just run, generate the detailed report
   const aiSymbol = typeof params.symbol === 'string' ? params.symbol : null;
   const aiTf = typeof params.tf === 'string' ? params.tf : null;
-  const aiResult = params.ai === '1' && aiSymbol && aiTf
-    ? await runAIBacktest(demoCandles, aiSymbol, aiTf)
-    : null;
+  let aiResult = null;
+  if (params.ai === '1' && aiSymbol && aiTf) {
+    const candles = await fetchCandles(aiSymbol, aiTf, 500);
+    aiResult = await runAIBacktest(candles, aiSymbol, aiTf);
+  }
 
   return (
     <div className="space-y-8">

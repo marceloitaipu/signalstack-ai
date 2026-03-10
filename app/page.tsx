@@ -2,12 +2,13 @@ import Link from 'next/link';
 import { Navbar } from '@/components/navbar';
 import { BRAND } from '@/lib/brand';
 import { getLocale, t } from '@/lib/i18n';
-import { demoCandles } from '@/lib/market';
+import { fetchCandles } from '@/lib/market';
 import { generateAISignal } from '@/lib/ai';
 
 export default async function HomePage() {
   const locale = await getLocale();
-  const signal = await generateAISignal(demoCandles, 'BTC/USDT');
+  const candles = await fetchCandles('BTC/USDT', '1h', 200);
+  const signal = await generateAISignal(candles, 'BTC/USDT');
 
   const features = [
     { title: t(locale, 'home.feat1_title'), text: t(locale, 'home.feat1_text') },

@@ -1,7 +1,7 @@
 import { requireSession } from '@/lib/auth';
 import { SectionCard } from '@/components/section-card';
 import { StatCard } from '@/components/stat-card';
-import { demoCandles, getMarketSnapshot } from '@/lib/market';
+import { fetchCandles, getMarketSnapshot } from '@/lib/market';
 import { generateAISignal } from '@/lib/ai';
 import { getLocale, t } from '@/lib/i18n';
 
@@ -9,7 +9,8 @@ export default async function AISignalsPage() {
   await requireSession();
   const locale = await getLocale();
   const market = await getMarketSnapshot();
-  const signal = await generateAISignal(demoCandles, 'BTC/USDT');
+  const candles = await fetchCandles('BTC/USDT', '1h', 200);
+  const signal = await generateAISignal(candles, 'BTC/USDT');
 
   const sideColor = signal.side === 'LONG' ? 'text-emerald-400' : signal.side === 'SHORT' ? 'text-rose-400' : 'text-amber-300';
   const sideBg = signal.side === 'LONG' ? 'bg-emerald-400/10 border-emerald-400/25' : signal.side === 'SHORT' ? 'bg-rose-400/10 border-rose-400/25' : 'bg-amber-400/10 border-amber-400/25';

@@ -1,13 +1,14 @@
 import { ok, fail } from '@/lib/api';
 import { getSession } from '@/lib/auth';
-import { demoCandles } from '@/lib/market';
+import { fetchCandles } from '@/lib/market';
 import { generateAISignal } from '@/lib/ai';
 
 export async function GET() {
   const session = await getSession();
   if (!session) return fail('Unauthorized', 401);
 
-  const signal = await generateAISignal(demoCandles, 'BTC/USDT');
+  const candles = await fetchCandles('BTC/USDT', '1h', 200);
+  const signal = await generateAISignal(candles, 'BTC/USDT');
   return ok(signal);
 }
 
@@ -17,9 +18,9 @@ export async function POST(request: Request) {
 
   const formData = await request.formData();
   const symbol = String(formData.get('symbol') || 'BTC/USDT');
+  const timeframe = String(formData.get('timeframe') || '1h');
 
-  // In production, fetch real candles for the requested symbol
-  // For now, use demo candles with symbol label
-  const signal = await generateAISignal(demoCandles, symbol);
+  const candles = await fetchCandles(symbol, timeframe, 200);
+  const signal = await generateAISignal(candles, symbol);
   return ok(signal);
 }

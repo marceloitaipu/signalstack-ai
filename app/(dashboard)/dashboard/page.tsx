@@ -1,12 +1,13 @@
 import { StatCard } from '@/components/stat-card';
 import { SectionCard } from '@/components/section-card';
-import { getMarketSnapshot, demoCandles } from '@/lib/market';
+import { getMarketSnapshot, fetchCandles } from '@/lib/market';
 import { generateAISignal } from '@/lib/ai';
 import { getLocale, t } from '@/lib/i18n';
 
 export default async function DashboardPage() {
   const market = await getMarketSnapshot();
-  const signal = await generateAISignal(demoCandles, 'BTC/USDT');
+  const candles = await fetchCandles('BTC/USDT', '1h', 200);
+  const signal = await generateAISignal(candles, 'BTC/USDT');
   const locale = await getLocale();
 
   const sideColor = signal.side === 'LONG' ? 'text-emerald-400' : signal.side === 'SHORT' ? 'text-rose-400' : 'text-amber-300';
