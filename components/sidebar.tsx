@@ -6,6 +6,7 @@ export async function Sidebar() {
   const locale = await getLocale();
   const items: [string, string][] = [
     [t(locale, 'sidebar.dashboard'), '/dashboard'],
+    [t(locale, 'sidebar.ai_signals'), '/ai-signals'],
     [t(locale, 'sidebar.markets'), '/markets'],
     [t(locale, 'sidebar.alerts'), '/alerts'],
     [t(locale, 'sidebar.backtests'), '/backtests'],
