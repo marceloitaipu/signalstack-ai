@@ -2,7 +2,7 @@
 
 export function LanguageSwitcher({ current }: { current: 'en' | 'pt' }) {
   const next = current === 'en' ? 'pt' : 'en';
-  const label = current === 'en' ? '🇧🇷 PT' : '🇺🇸 EN';
+  const label = current === 'en' ? '�🇸 EN' : '🇧🇷 PT';
 
   return (
     <form action="/api/locale" method="post">
@@ -20,7 +20,7 @@ export function LanguageSwitcher({ current }: { current: 'en' | 'pt' }) {
 
 export function FloatingLanguageSwitcher({ current }: { current: 'en' | 'pt' }) {
   const next = current === 'en' ? 'pt' : 'en';
-  const flag = current === 'en' ? '🇧🇷' : '🇺🇸';
+  const flag = current === 'en' ? '🇺🇸' : '🇧🇷';
 
   return (
     <form action="/api/locale" method="post" className="fixed bottom-6 right-6 z-50">
