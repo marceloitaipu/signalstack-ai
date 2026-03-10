@@ -2,9 +2,12 @@ import Link from 'next/link';
 import { Navbar } from '@/components/navbar';
 import { BRAND } from '@/lib/brand';
 import { getLocale, t } from '@/lib/i18n';
+import { demoCandles } from '@/lib/market';
+import { generateAISignal } from '@/lib/ai';
 
 export default async function HomePage() {
   const locale = await getLocale();
+  const signal = await generateAISignal(demoCandles, 'BTC/USDT');
 
   const features = [
     { title: t(locale, 'home.feat1_title'), text: t(locale, 'home.feat1_text') },
@@ -19,14 +22,16 @@ export default async function HomePage() {
     [t(locale, 'home.plan_desk'), t(locale, 'home.plan_desk_price'), t(locale, 'home.plan_desk_desc')],
   ];
 
+  const sideColor = signal.side === 'LONG' ? 'text-emerald-400 border-emerald-400/30 bg-emerald-400/10' : signal.side === 'SHORT' ? 'text-rose-400 border-rose-400/30 bg-rose-400/10' : 'text-amber-300 border-amber-400/30 bg-amber-400/10';
   const entryLabel = locale === 'pt' ? 'Entrada' : 'Entry';
-  const stopLabel = locale === 'pt' ? 'Stop' : 'Stop';
-  const targetLabel = locale === 'pt' ? 'Alvo' : 'Target';
+  const stopLabel = 'Stop Loss';
+  const targetLabel = 'Take Profit';
 
   return (
     <main>
       <Navbar />
 
+      {/* Hero */}
       <section className="hero-grid overflow-hidden">
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-20 md:grid-cols-[1.2fr_.8fr] md:py-28">
           <div>
@@ -39,48 +44,88 @@ export default async function HomePage() {
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link href="/register" className="rounded-full bg-cyan-400 px-6 py-3 font-semibold text-slate-950 transition hover:opacity-90">{t(locale, 'home.cta_free')}</Link>
-              <Link href="/onboarding" className="rounded-full border border-white/15 px-6 py-3 font-semibold text-white transition hover:bg-white/5">{t(locale, 'home.cta_onboarding')}</Link>
+              <Link href="/login" className="rounded-full border border-white/15 px-6 py-3 font-semibold text-white transition hover:bg-white/5">{t(locale, 'home.cta_onboarding')}</Link>
             </div>
             <div className="mt-10 grid max-w-2xl gap-4 text-sm text-slate-400 md:grid-cols-3">
-              <div className="glass rounded-2xl p-4"><div className="text-2xl font-bold text-white">{BRAND.heroStat2}</div><div>{BRAND.heroStat2Label}</div></div>
-              <div className="glass rounded-2xl p-4"><div className="text-2xl font-bold text-white">{BRAND.heroStat1}</div><div>{BRAND.heroStat1Label}</div></div>
-              <div className="glass rounded-2xl p-4"><div className="text-2xl font-bold text-white">{BRAND.heroStat3}</div><div>{BRAND.heroStat3Label}</div></div>
+              <div className="glass rounded-2xl p-4"><div className="text-2xl font-bold text-cyan-300">{BRAND.heroStat1}</div><div>{BRAND.heroStat1Label}</div></div>
+              <div className="glass rounded-2xl p-4"><div className="text-2xl font-bold text-cyan-300">{BRAND.heroStat2}</div><div>{BRAND.heroStat2Label}</div></div>
+              <div className="glass rounded-2xl p-4"><div className="text-2xl font-bold text-cyan-300">{BRAND.heroStat3}</div><div>{BRAND.heroStat3Label}</div></div>
             </div>
           </div>
 
+          {/* Live AI signal preview */}
           <div className="glass rounded-[32px] p-6">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm text-slate-400">{t(locale, 'home.live_preview')}</div>
                 <div className="mt-2 text-2xl font-semibold text-white">BTC/USDT</div>
               </div>
-              <div className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm text-emerald-300">BUY · 78%</div>
+              <div className={`rounded-full border px-4 py-2 text-sm font-semibold ${sideColor}`}>{signal.side} · {signal.confidence}%</div>
             </div>
-            <div className="mt-6 grid gap-4">
-              <div className="rounded-3xl bg-slate-950/70 p-5">
-                <div className="text-sm text-slate-400">{t(locale, 'home.trade_thesis')}</div>
-                <div className="mt-3 text-lg text-white">{t(locale, 'home.trade_thesis_text')}</div>
+
+            {/* AI Thesis */}
+            <div className="mt-5 rounded-3xl border border-cyan-400/15 bg-gradient-to-br from-cyan-950/30 to-slate-950/80 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-cyan-300">
+                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-cyan-400/15">🧠</span>
+                {t(locale, 'home.trade_thesis')}
               </div>
-              <div className="grid gap-4 md:grid-cols-3">
-                {[
-                  [entryLabel, '64,182'],
-                  [stopLabel, '62,915'],
-                  [targetLabel, '66,731']
-                ].map(([label, value]) => (
-                  <div key={label} className="rounded-3xl bg-slate-950/70 p-5">
-                    <div className="text-sm text-slate-400">{label}</div>
-                    <div className="mt-2 text-2xl font-semibold text-white">{value}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="rounded-3xl bg-slate-950/70 p-5 text-sm text-slate-300">
-                {t(locale, 'home.preview_note')}
-              </div>
+              <div className="mt-3 text-sm leading-6 text-slate-200">{signal.aiInsight}</div>
+            </div>
+
+            {/* Entry / SL / TP */}
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              {[
+                [entryLabel, `$${signal.entry.toLocaleString()}`, 'text-white'],
+                [stopLabel, `$${signal.stopLoss.toLocaleString()}`, 'text-rose-400'],
+                [targetLabel, `$${signal.takeProfit.toLocaleString()}`, 'text-emerald-400']
+              ].map(([label, value, color]) => (
+                <div key={label} className="rounded-3xl bg-slate-950/70 p-4">
+                  <div className="text-xs text-slate-400">{label}</div>
+                  <div className={`mt-1 text-xl font-semibold ${color}`}>{value}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Indicators mini-grid */}
+            <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+              <div className="rounded-2xl bg-slate-950/70 px-3 py-2 text-slate-400">{locale === 'pt' ? 'Tendência' : 'Trend'} <span className={`ml-1 font-semibold ${signal.indicators.trend === 'BULLISH' ? 'text-emerald-400' : signal.indicators.trend === 'BEARISH' ? 'text-rose-400' : 'text-amber-300'}`}>{signal.indicators.trend}</span></div>
+              <div className="rounded-2xl bg-slate-950/70 px-3 py-2 text-slate-400">RSI <span className="ml-1 font-semibold text-white">{signal.indicators.rsi}</span></div>
+              <div className="rounded-2xl bg-slate-950/70 px-3 py-2 text-slate-400">R:R <span className="ml-1 font-semibold text-cyan-300">{signal.riskReward}</span></div>
+              <div className="rounded-2xl bg-slate-950/70 px-3 py-2 text-slate-400">{locale === 'pt' ? 'Volume' : 'Vol. Spike'} <span className={`ml-1 font-semibold ${signal.indicators.volumeSpike ? 'text-emerald-400' : 'text-slate-500'}`}>{signal.indicators.volumeSpike ? '✓' : '✗'}</span></div>
+            </div>
+
+            <div className="mt-4 rounded-2xl bg-slate-950/50 p-3 text-xs leading-5 text-slate-400">
+              {t(locale, 'home.preview_note')}
             </div>
           </div>
         </div>
       </section>
 
+      {/* How AI Works */}
+      <section className="mx-auto max-w-7xl px-6 py-14">
+        <div className="mb-10 text-center">
+          <div className="text-sm uppercase tracking-[0.25em] text-cyan-300">{locale === 'pt' ? 'Como a IA funciona' : 'How the AI works'}</div>
+          <h2 className="mt-3 text-3xl font-bold text-white md:text-4xl">{locale === 'pt' ? 'Do sinal à execução em 3 passos' : 'From signal to execution in 3 steps'}</h2>
+        </div>
+        <div className="grid gap-6 md:grid-cols-3">
+          {[
+            { step: '01', icon: '📊', title: locale === 'pt' ? 'Análise Multi-Fator' : 'Multi-Factor Analysis', desc: locale === 'pt' ? 'O motor IA analisa 8+ indicadores técnicos em tempo real: EMAs, RSI, ATR, volume, suporte e resistência, alinhamento de tendência.' : 'The AI engine analyzes 8+ technical indicators in real-time: EMAs, RSI, ATR, volume, support & resistance, trend alignment.' },
+            { step: '02', icon: '🧠', title: locale === 'pt' ? 'Insight GPT-4o' : 'GPT-4o Insight', desc: locale === 'pt' ? 'Cada sinal recebe uma análise profunda do GPT cobrindo timing de entrada, fatores de risco, gatilhos de confirmação e níveis de invalidação.' : 'Every signal gets a deep GPT analysis covering entry timing, risk factors, confirmation triggers and invalidation levels.' },
+            { step: '03', icon: '🎯', title: locale === 'pt' ? 'Entrada, Stop & Alvo' : 'Entry, Stop & Target', desc: locale === 'pt' ? 'Pontos de entrada, stop-loss e take-profit calculados por ATR com risk:reward otimizado. Backtest com log completo de trades.' : 'Entry, stop-loss and take-profit levels calculated via ATR with optimized risk:reward. Backtest with full trade log.' },
+          ].map((item) => (
+            <div key={item.step} className="glass rounded-[28px] p-7">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">{item.icon}</span>
+                <div className="text-xs font-bold uppercase tracking-widest text-cyan-400">Step {item.step}</div>
+              </div>
+              <div className="mt-4 text-xl font-semibold text-white">{item.title}</div>
+              <p className="mt-3 text-sm leading-7 text-slate-400">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Features */}
       <section id="features" className="mx-auto max-w-7xl px-6 py-14">
         <div className="mb-8 max-w-2xl">
           <div className="text-sm uppercase tracking-[0.25em] text-cyan-300">{t(locale, 'home.features_badge')}</div>
@@ -96,6 +141,27 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* AI Metrics Banner */}
+      <section className="mx-auto max-w-7xl px-6 py-10">
+        <div className="glass rounded-[32px] p-8 md:p-10">
+          <div className="grid gap-8 text-center md:grid-cols-5">
+            {[
+              ['8+', locale === 'pt' ? 'Indicadores Técnicos' : 'Technical Indicators'],
+              ['3', locale === 'pt' ? 'Tipos de Sinal' : 'Signal Types'],
+              ['10+', locale === 'pt' ? 'Métricas de Backtest' : 'Backtest Metrics'],
+              ['GPT-4o', locale === 'pt' ? 'Análise por IA' : 'AI-Powered'],
+              ['1.5:1+', 'Risk : Reward'],
+            ].map(([value, label]) => (
+              <div key={label}>
+                <div className="text-4xl font-bold text-cyan-300">{value}</div>
+                <div className="mt-2 text-sm text-slate-400">{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
       <section id="pricing" className="mx-auto max-w-7xl px-6 py-14">
         <div className="mb-8 max-w-2xl">
           <div className="text-sm uppercase tracking-[0.25em] text-cyan-300">{t(locale, 'home.pricing_badge')}</div>

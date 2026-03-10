@@ -3,11 +3,11 @@ export const BRAND = {
   legalName: 'SignalStack AI LLC',
   supportEmail: 'support@signalstack.ai',
   website: 'https://signalstack.ai',
-  tagline: 'Crypto research, alerts and signal intelligence',
-  heroStat1: '4 min',
-  heroStat1Label: 'average setup to first alert',
-  heroStat2: '3 tiers',
-  heroStat2Label: 'subscription plans',
-  heroStat3: 'Ops-ready',
-  heroStat3Label: 'delivery and admin visibility'
+  tagline: 'AI-powered crypto trading signals & backtesting',
+  heroStat1: 'AI Engine',
+  heroStat1Label: 'multi-factor scoring',
+  heroStat2: '8+ indicators',
+  heroStat2Label: 'EMA, RSI, ATR, volume & more',
+  heroStat3: 'GPT-4o',
+  heroStat3Label: 'market analysis powered'
 } as const;
