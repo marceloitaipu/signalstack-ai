@@ -24,11 +24,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+import { FloatingLanguageSwitcher } from '@/components/language-switcher';
+import { getLocale } from '@/lib/i18n';
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
   return (
-    <html lang="en">
+    <html lang={locale === 'pt' ? 'pt-BR' : 'en'}>
       <body>
         {children}
+        <FloatingLanguageSwitcher current={locale} />
         <Script id="sw-register" strategy="afterInteractive">{`
           if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').catch(() => {});
