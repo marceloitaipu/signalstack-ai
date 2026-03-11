@@ -9,7 +9,13 @@ export type Candle = {
 
 /* ── Binance Public API integration ────────────────────────── */
 
-const BINANCE_BASE = 'https://api.binance.com';
+// Multiple endpoints for geo-redundancy (US Vercel regions block api.binance.com)
+const BINANCE_ENDPOINTS = [
+  'https://api.binance.com',
+  'https://api1.binance.com',
+  'https://api3.binance.com',
+  'https://data-api.binance.vision',
+];
 
 /** Convert "BTC/USDT" → "BTCUSDT" for Binance */
 function toBinanceSymbol(symbol: string): string {
@@ -19,6 +25,23 @@ function toBinanceSymbol(symbol: string): string {
 /** In-memory cache to avoid hammering the API on every page load */
 const cache = new Map<string, { data: Candle[]; ts: number }>();
 const CACHE_TTL = 60_000; // 1 minute
+
+/** Try fetching from multiple Binance endpoints with timeout */
+async function fetchWithFallback(path: string): Promise<Response> {
+  for (const base of BINANCE_ENDPOINTS) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const res = await fetch(`${base}${path}`, {
+        signal: controller.signal,
+        cache: 'no-store',
+      });
+      clearTimeout(timeout);
+      if (res.ok) return res;
+    } catch { /* try next endpoint */ }
+  }
+  throw new Error('All Binance endpoints failed');
+}
 
 /**
  * Fetch real OHLCV candles from Binance.
@@ -36,9 +59,9 @@ export async function fetchCandles(
   if (cached && Date.now() - cached.ts < CACHE_TTL) return cached.data;
 
   try {
-    const url = `${BINANCE_BASE}/api/v3/klines?symbol=${toBinanceSymbol(symbol)}&interval=${interval}&limit=${limit}`;
-    const res = await fetch(url, { next: { revalidate: 60 } });
-    if (!res.ok) throw new Error(`Binance ${res.status}`);
+    const res = await fetchWithFallback(
+      `/api/v3/klines?symbol=${toBinanceSymbol(symbol)}&interval=${interval}&limit=${limit}`
+    );
 
     // Binance kline format: [openTime, open, high, low, close, volume, closeTime, ...]
     const raw: unknown[][] = await res.json();
@@ -79,20 +102,17 @@ export async function getMarketSnapshot(symbol: string = 'BTC/USDT') {
   const candles = await fetchCandles(symbol, '1h', 200);
 
   try {
-    const tickerRes = await fetch(
-      `${BINANCE_BASE}/api/v3/ticker/24hr?symbol=${toBinanceSymbol(symbol)}`,
-      { next: { revalidate: 60 } },
+    const tickerRes = await fetchWithFallback(
+      `/api/v3/ticker/24hr?symbol=${toBinanceSymbol(symbol)}`
     );
-    if (tickerRes.ok) {
-      const ticker = await tickerRes.json();
-      return {
-        symbol,
-        price: parseFloat(ticker.lastPrice),
-        change24h: parseFloat(ticker.priceChangePercent),
-        volume24h: parseFloat(ticker.quoteVolume),
-        candles,
-      };
-    }
+    const ticker = await tickerRes.json();
+    return {
+      symbol,
+      price: parseFloat(ticker.lastPrice),
+      change24h: parseFloat(ticker.priceChangePercent),
+      volume24h: parseFloat(ticker.quoteVolume),
+      candles,
+    };
   } catch { /* fallback below */ }
 
   const last = candles[candles.length - 1];
