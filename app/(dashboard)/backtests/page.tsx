@@ -17,7 +17,7 @@ export default async function BacktestsPage({ searchParams }: { searchParams?: P
   let aiResult = null;
   if (params.ai === '1' && aiSymbol && aiTf) {
     const candles = await fetchCandles(aiSymbol, aiTf, 500);
-    aiResult = await runAIBacktest(candles, aiSymbol, aiTf);
+    aiResult = await runAIBacktest(candles, aiSymbol, aiTf, locale);
   }
 
   return (

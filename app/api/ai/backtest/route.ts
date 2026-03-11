@@ -4,18 +4,20 @@ import { fetchCandles } from '@/lib/market';
 import { runAIBacktest } from '@/lib/ai';
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
+import { getLocale } from '@/lib/i18n';
 
 export async function POST(request: Request) {
   const session = await getSession();
   if (!session) return fail('Unauthorized', 401);
 
+  const locale = await getLocale();
   const formData = await request.formData();
   const symbol = String(formData.get('symbol') || 'BTC/USDT');
   const timeframe = String(formData.get('timeframe') || '1h');
 
   // Fetch real candles from Binance (500 for backtest depth)
   const candles = await fetchCandles(symbol, timeframe, 500);
-  const result = await runAIBacktest(candles, symbol, timeframe);
+  const result = await runAIBacktest(candles, symbol, timeframe, locale);
 
   // Save to DB
   await prisma.backtest.create({

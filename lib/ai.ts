@@ -105,7 +105,8 @@ function computeIndicators(candles: Candle[]) {
 }
 
 // ── AI Signal Generation (with OpenAI when key is available) ────────────
-export async function generateAISignal(candles: Candle[], symbol: string): Promise<AISignal> {
+export async function generateAISignal(candles: Candle[], symbol: string, locale: string = 'en'): Promise<AISignal> {
+  const pt = locale === 'pt';
   const ind = computeIndicators(candles);
   const currentPrice = ind.closes[ind.last];
 
@@ -117,28 +118,28 @@ export async function generateAISignal(candles: Candle[], symbol: string): Promi
   const bullishCross = ind.emaFastArr[ind.last] > ind.emaSlowArr[ind.last] && ind.emaFastArr[ind.last - 1] <= ind.emaSlowArr[ind.last - 1];
   const bearishCross = ind.emaFastArr[ind.last] < ind.emaSlowArr[ind.last] && ind.emaFastArr[ind.last - 1] >= ind.emaSlowArr[ind.last - 1];
 
-  if (bullishCross) { score += 25; reasons.push('Bullish EMA 9/21 crossover'); }
-  if (bearishCross) { score -= 25; reasons.push('Bearish EMA 9/21 crossover'); }
+  if (bullishCross) { score += 25; reasons.push(pt ? 'Cruzamento altista EMA 9/21' : 'Bullish EMA 9/21 crossover'); }
+  if (bearishCross) { score -= 25; reasons.push(pt ? 'Cruzamento baixista EMA 9/21' : 'Bearish EMA 9/21 crossover'); }
 
   // EMA alignment
-  if (ind.emaFast > ind.emaSlow && currentPrice > ind.ema200) { score += 15; reasons.push('Price above EMA 200 with bullish alignment'); }
-  if (ind.emaFast < ind.emaSlow && currentPrice < ind.ema200) { score -= 15; reasons.push('Price below EMA 200 with bearish alignment'); }
+  if (ind.emaFast > ind.emaSlow && currentPrice > ind.ema200) { score += 15; reasons.push(pt ? 'Preço acima da EMA 200 com alinhamento altista' : 'Price above EMA 200 with bullish alignment'); }
+  if (ind.emaFast < ind.emaSlow && currentPrice < ind.ema200) { score -= 15; reasons.push(pt ? 'Preço abaixo da EMA 200 com alinhamento baixista' : 'Price below EMA 200 with bearish alignment'); }
 
   // RSI
-  if (ind.rsi < 30) { score += 20; reasons.push(`RSI oversold at ${ind.rsi.toFixed(1)}`); }
-  else if (ind.rsi > 70) { score -= 20; reasons.push(`RSI overbought at ${ind.rsi.toFixed(1)}`); }
-  else if (ind.rsi > 50 && ind.rsi < 65) { score += 8; reasons.push('RSI in bullish zone'); }
-  else if (ind.rsi < 50 && ind.rsi > 35) { score -= 8; reasons.push('RSI in bearish zone'); }
+  if (ind.rsi < 30) { score += 20; reasons.push(pt ? `RSI sobrevendido em ${ind.rsi.toFixed(1)}` : `RSI oversold at ${ind.rsi.toFixed(1)}`); }
+  else if (ind.rsi > 70) { score -= 20; reasons.push(pt ? `RSI sobrecomprado em ${ind.rsi.toFixed(1)}` : `RSI overbought at ${ind.rsi.toFixed(1)}`); }
+  else if (ind.rsi > 50 && ind.rsi < 65) { score += 8; reasons.push(pt ? 'RSI em zona altista' : 'RSI in bullish zone'); }
+  else if (ind.rsi < 50 && ind.rsi > 35) { score -= 8; reasons.push(pt ? 'RSI em zona baixista' : 'RSI in bearish zone'); }
 
   // Volume confirmation
-  if (ind.volumeSpike && score > 0) { score += 12; reasons.push('Volume spike confirms bullish pressure'); }
-  if (ind.volumeSpike && score < 0) { score -= 12; reasons.push('Volume spike confirms bearish pressure'); }
+  if (ind.volumeSpike && score > 0) { score += 12; reasons.push(pt ? 'Pico de volume confirma pressão compradora' : 'Volume spike confirms bullish pressure'); }
+  if (ind.volumeSpike && score < 0) { score -= 12; reasons.push(pt ? 'Pico de volume confirma pressão vendedora' : 'Volume spike confirms bearish pressure'); }
 
   // Support/resistance proximity
   const distToSupport = (currentPrice - ind.support) / currentPrice * 100;
   const distToResistance = (ind.resistance - currentPrice) / currentPrice * 100;
-  if (distToSupport < 2) { score += 10; reasons.push('Price near support level'); }
-  if (distToResistance < 2) { score -= 10; reasons.push('Price near resistance level'); }
+  if (distToSupport < 2) { score += 10; reasons.push(pt ? 'Preço próximo ao suporte' : 'Price near support level'); }
+  if (distToResistance < 2) { score -= 10; reasons.push(pt ? 'Preço próximo à resistência' : 'Price near resistance level'); }
 
   // Determine side
   let side: AISide = 'WAIT';
@@ -168,9 +169,9 @@ export async function generateAISignal(candles: Candle[], symbol: string): Promi
   // Try OpenAI for deeper insight
   let aiInsight = '';
   try {
-    aiInsight = await callOpenAI(symbol, currentPrice, ind, side, score, reasons);
+    aiInsight = await callOpenAI(symbol, currentPrice, ind, side, score, reasons, locale);
   } catch {
-    aiInsight = generateLocalInsight(symbol, currentPrice, ind, side, score, reasons);
+    aiInsight = generateLocalInsight(symbol, currentPrice, ind, side, score, reasons, locale);
   }
 
   return {
@@ -181,7 +182,9 @@ export async function generateAISignal(candles: Candle[], symbol: string): Promi
     takeProfit: Number(takeProfit.toFixed(2)),
     riskReward,
     thesis,
-    summary: `${side} ${symbol} @ ${currentPrice.toFixed(2)} | Conf: ${confidence.toFixed(0)}% | R:R ${riskReward}`,
+    summary: pt
+      ? `${side} ${symbol} @ ${currentPrice.toFixed(2)} | Conf: ${confidence.toFixed(0)}% | R:R ${riskReward}`
+      : `${side} ${symbol} @ ${currentPrice.toFixed(2)} | Conf: ${confidence.toFixed(0)}% | R:R ${riskReward}`,
     indicators: {
       emaFast: Number(ind.emaFast.toFixed(2)),
       emaSlow: Number(ind.emaSlow.toFixed(2)),
@@ -198,7 +201,8 @@ export async function generateAISignal(candles: Candle[], symbol: string): Promi
 }
 
 // ── AI Backtest Engine ──────────────────────────────────────────────────
-export async function runAIBacktest(candles: Candle[], symbol: string, timeframe: string): Promise<AIBacktestResult> {
+export async function runAIBacktest(candles: Candle[], symbol: string, timeframe: string, locale: string = 'en'): Promise<AIBacktestResult> {
+  const pt = locale === 'pt';
   const trades: AIBacktestTrade[] = [];
   const lookback = 30;
   let equity = 10000;
@@ -226,16 +230,16 @@ export async function runAIBacktest(candles: Candle[], symbol: string, timeframe
     let reason = '';
     if (bullishCross && ind.rsi < 68 && ind.volumeSpike) {
       side = 'LONG';
-      reason = 'Bullish EMA crossover + volume + RSI confirmation';
+      reason = pt ? 'Cruzamento altista EMA + volume + RSI' : 'Bullish EMA crossover + volume + RSI confirmation';
     } else if (bearishCross && ind.rsi > 32 && ind.volumeSpike) {
       side = 'SHORT';
-      reason = 'Bearish EMA crossover + volume + RSI confirmation';
+      reason = pt ? 'Cruzamento baixista EMA + volume + RSI' : 'Bearish EMA crossover + volume + RSI confirmation';
     } else if (ind.rsi < 28 && ind.trend === 'BULLISH') {
       side = 'LONG';
-      reason = 'RSI oversold bounce in bullish trend';
+      reason = pt ? 'Repique RSI sobrevendido em tendência altista' : 'RSI oversold bounce in bullish trend';
     } else if (ind.rsi > 72 && ind.trend === 'BEARISH') {
       side = 'SHORT';
-      reason = 'RSI overbought reversal in bearish trend';
+      reason = pt ? 'Reversão RSI sobrecomprado em tendência baixista' : 'RSI overbought reversal in bearish trend';
     }
 
     if (!side) continue;
@@ -311,9 +315,9 @@ export async function runAIBacktest(candles: Candle[], symbol: string, timeframe
   // AI analysis of the results
   let aiAnalysis = '';
   try {
-    aiAnalysis = await callOpenAIBacktest(symbol, timeframe, { totalTrades, winRate, netReturn, maxDrawdown, profitFactor, sharpeRatio, avgWin, avgLoss });
+    aiAnalysis = await callOpenAIBacktest(symbol, timeframe, { totalTrades, winRate, netReturn, maxDrawdown, profitFactor, sharpeRatio, avgWin, avgLoss }, locale);
   } catch {
-    aiAnalysis = generateLocalBacktestAnalysis(symbol, timeframe, { totalTrades, winRate, netReturn, maxDrawdown, profitFactor, sharpeRatio });
+    aiAnalysis = generateLocalBacktestAnalysis(symbol, timeframe, { totalTrades, winRate, netReturn, maxDrawdown, profitFactor, sharpeRatio }, locale);
   }
 
   return {
@@ -353,12 +357,17 @@ async function callOpenAI(
   ind: ReturnType<typeof computeIndicators>,
   side: AISide,
   score: number,
-  reasons: string[]
+  reasons: string[],
+  locale: string = 'en'
 ): Promise<string> {
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return generateLocalInsight(symbol, price, ind, side, score, reasons);
+  if (!apiKey) return generateLocalInsight(symbol, price, ind, side, score, reasons, locale);
 
-  const prompt = `You are a professional crypto trading analyst. Analyze this market setup and provide a concise trading recommendation in 3-4 sentences.
+  const langInstruction = locale === 'pt'
+    ? 'Responda INTEIRAMENTE em português brasileiro. Você é um analista profissional de trading de cripto.'
+    : 'You are a professional crypto trading analyst.';
+
+  const prompt = `${langInstruction} Analyze this market setup and provide a concise trading recommendation in 3-4 sentences.
 
 Symbol: ${symbol}
 Price: $${price.toFixed(2)}
@@ -371,7 +380,7 @@ Support: $${ind.support.toFixed(2)} | Resistance: $${ind.resistance.toFixed(2)}
 Signal score: ${score} (${side})
 Key factors: ${reasons.join(', ')}
 
-Provide actionable insight covering: entry timing, key risk factors, and what to watch for confirmation or invalidation.`;
+${locale === 'pt' ? 'Forneça insights acionáveis cobrindo: timing de entrada, fatores de risco e o que observar para confirmação ou invalidação.' : 'Provide actionable insight covering: entry timing, key risk factors, and what to watch for confirmation or invalidation.'}`;
 
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -392,12 +401,17 @@ Provide actionable insight covering: entry timing, key risk factors, and what to
 async function callOpenAIBacktest(
   symbol: string,
   timeframe: string,
-  stats: { totalTrades: number; winRate: number; netReturn: number; maxDrawdown: number; profitFactor: number; sharpeRatio: number; avgWin: number; avgLoss: number }
+  stats: { totalTrades: number; winRate: number; netReturn: number; maxDrawdown: number; profitFactor: number; sharpeRatio: number; avgWin: number; avgLoss: number },
+  locale: string = 'en'
 ): Promise<string> {
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return generateLocalBacktestAnalysis(symbol, timeframe, stats);
+  if (!apiKey) return generateLocalBacktestAnalysis(symbol, timeframe, stats, locale);
 
-  const prompt = `You are a quantitative trading analyst. Analyze these backtest results and provide 3-4 sentences of professional insight.
+  const langInstruction = locale === 'pt'
+    ? 'Responda INTEIRAMENTE em português brasileiro. Você é um analista quantitativo de trading.'
+    : 'You are a quantitative trading analyst.';
+
+  const prompt = `${langInstruction} Analyze these backtest results and provide 3-4 sentences of professional insight.
 
 Symbol: ${symbol} | Timeframe: ${timeframe}
 Total trades: ${stats.totalTrades} | Win rate: ${stats.winRate.toFixed(1)}%
@@ -405,7 +419,7 @@ Net return: ${stats.netReturn.toFixed(1)}% | Max drawdown: ${stats.maxDrawdown.t
 Profit factor: ${stats.profitFactor.toFixed(2)} | Sharpe ratio: ${stats.sharpeRatio.toFixed(2)}
 Avg win: ${stats.avgWin.toFixed(2)}% | Avg loss: ${stats.avgLoss.toFixed(2)}%
 
-Comment on: strategy viability, risk-adjusted performance, suggested improvements, and whether these results warrant live trading.`;
+${locale === 'pt' ? 'Comente sobre: viabilidade da estratégia, desempenho ajustado ao risco, melhorias sugeridas e se os resultados justificam operação ao vivo.' : 'Comment on: strategy viability, risk-adjusted performance, suggested improvements, and whether these results warrant live trading.'}`;
 
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -430,24 +444,43 @@ function generateLocalInsight(
   ind: ReturnType<typeof computeIndicators>,
   side: AISide,
   score: number,
-  reasons: string[]
+  reasons: string[],
+  locale: string = 'en'
 ): string {
+  const pt = locale === 'pt';
+  const trendLabel = pt
+    ? (ind.trend === 'BULLISH' ? 'altista' : ind.trend === 'BEARISH' ? 'baixista' : 'lateral')
+    : ind.trend.toLowerCase();
+
   if (side === 'LONG') {
-    return `AI Analysis: ${symbol} shows a bullish setup at $${price.toFixed(2)} with ${ind.trend.toLowerCase()} trend alignment. RSI at ${ind.rsi.toFixed(1)} leaves room for upside. Key risk: a break below support at $${ind.support.toFixed(2)} would invalidate this thesis. Watch for sustained volume above average and EMA 21 holding as dynamic support for confirmation. Signal strength: ${Math.abs(score)}/100.`;
+    return pt
+      ? `Análise IA: ${symbol} apresenta configuração altista em $${price.toFixed(2)} com tendência ${trendLabel}. RSI em ${ind.rsi.toFixed(1)} ainda permite espaço para alta. Risco principal: uma queda abaixo do suporte em $${ind.support.toFixed(2)} invalidaria esta tese. Observe volume acima da média e EMA 21 como suporte dinâmico para confirmação. Força do sinal: ${Math.abs(score)}/100.`
+      : `AI Analysis: ${symbol} shows a bullish setup at $${price.toFixed(2)} with ${trendLabel} trend alignment. RSI at ${ind.rsi.toFixed(1)} leaves room for upside. Key risk: a break below support at $${ind.support.toFixed(2)} would invalidate this thesis. Watch for sustained volume above average and EMA 21 holding as dynamic support for confirmation. Signal strength: ${Math.abs(score)}/100.`;
   } else if (side === 'SHORT') {
-    return `AI Analysis: ${symbol} exhibits bearish pressure at $${price.toFixed(2)} with declining momentum. RSI at ${ind.rsi.toFixed(1)} confirms selling pressure. Primary risk: a bounce from support at $${ind.support.toFixed(2)} or bullish divergence could trigger a squeeze. Monitor resistance at $${ind.resistance.toFixed(2)} for invalidation. Signal strength: ${Math.abs(score)}/100.`;
+    return pt
+      ? `Análise IA: ${symbol} exibe pressão vendedora em $${price.toFixed(2)} com momento em declínio. RSI em ${ind.rsi.toFixed(1)} confirma pressão de venda. Risco principal: uma recuperação a partir do suporte em $${ind.support.toFixed(2)} ou divergência altista pode disparar um squeeze. Monitore a resistência em $${ind.resistance.toFixed(2)} para invalidação. Força do sinal: ${Math.abs(score)}/100.`
+      : `AI Analysis: ${symbol} exhibits bearish pressure at $${price.toFixed(2)} with declining momentum. RSI at ${ind.rsi.toFixed(1)} confirms selling pressure. Primary risk: a bounce from support at $${ind.support.toFixed(2)} or bullish divergence could trigger a squeeze. Monitor resistance at $${ind.resistance.toFixed(2)} for invalidation. Signal strength: ${Math.abs(score)}/100.`;
   }
-  return `AI Analysis: ${symbol} at $${price.toFixed(2)} shows no high-conviction setup. Trend is ${ind.trend.toLowerCase()} with RSI at ${ind.rsi.toFixed(1)}. Wait for a clearer EMA crossover or RSI extreme before entering. Support at $${ind.support.toFixed(2)}, resistance at $${ind.resistance.toFixed(2)}. Patience is the best edge when conditions are ambiguous.`;
+  return pt
+    ? `Análise IA: ${symbol} em $${price.toFixed(2)} não apresenta configuração de alta convicção. Tendência ${trendLabel} com RSI em ${ind.rsi.toFixed(1)}. Aguarde um cruzamento mais claro das EMAs ou RSI extremo antes de entrar. Suporte em $${ind.support.toFixed(2)}, resistência em $${ind.resistance.toFixed(2)}. Paciência é a melhor vantagem quando as condições são ambíguas.`
+    : `AI Analysis: ${symbol} at $${price.toFixed(2)} shows no high-conviction setup. Trend is ${trendLabel} with RSI at ${ind.rsi.toFixed(1)}. Wait for a clearer EMA crossover or RSI extreme before entering. Support at $${ind.support.toFixed(2)}, resistance at $${ind.resistance.toFixed(2)}. Patience is the best edge when conditions are ambiguous.`;
 }
 
 function generateLocalBacktestAnalysis(
   symbol: string,
   timeframe: string,
-  stats: { totalTrades: number; winRate: number; netReturn: number; maxDrawdown: number; profitFactor: number; sharpeRatio: number }
+  stats: { totalTrades: number; winRate: number; netReturn: number; maxDrawdown: number; profitFactor: number; sharpeRatio: number },
+  locale: string = 'en'
 ): string {
-  const performance = stats.netReturn > 15 ? 'strong' : stats.netReturn > 5 ? 'moderate' : stats.netReturn > 0 ? 'marginal' : 'negative';
-  const riskAssessment = stats.maxDrawdown < 10 ? 'well-controlled' : stats.maxDrawdown < 20 ? 'acceptable' : 'concerning';
   const viable = stats.profitFactor > 1.5 && stats.winRate > 45;
 
+  if (locale === 'pt') {
+    const performance = stats.netReturn > 15 ? 'forte' : stats.netReturn > 5 ? 'moderado' : stats.netReturn > 0 ? 'marginal' : 'negativo';
+    const riskAssessment = stats.maxDrawdown < 10 ? 'bem controlado' : stats.maxDrawdown < 20 ? 'aceitável' : 'preocupante';
+    return `Análise IA do Backtest: A estratégia ${symbol} ${timeframe} apresenta desempenho ${performance} com ${stats.netReturn.toFixed(1)}% de retorno líquido em ${stats.totalTrades} operações. A gestão de risco está ${riskAssessment} com ${stats.maxDrawdown.toFixed(1)}% de drawdown máximo e Sharpe de ${stats.sharpeRatio.toFixed(2)}. Fator de lucro de ${stats.profitFactor.toFixed(2)} com ${stats.winRate.toFixed(1)}% de taxa de acerto ${viable ? 'sugere que a estratégia tem uma vantagem que vale explorar em condições reais com dimensionamento adequado de posição' : 'indica que otimização adicional de entradas e saídas é recomendada antes de operar ao vivo'}. Considere testar em timeframes e condições de mercado adicionais para robustez.`;
+  }
+
+  const performance = stats.netReturn > 15 ? 'strong' : stats.netReturn > 5 ? 'moderate' : stats.netReturn > 0 ? 'marginal' : 'negative';
+  const riskAssessment = stats.maxDrawdown < 10 ? 'well-controlled' : stats.maxDrawdown < 20 ? 'acceptable' : 'concerning';
   return `AI Backtest Analysis: The ${symbol} ${timeframe} strategy shows ${performance} performance with ${stats.netReturn.toFixed(1)}% net return across ${stats.totalTrades} trades. Risk management is ${riskAssessment} with ${stats.maxDrawdown.toFixed(1)}% max drawdown and a ${stats.sharpeRatio.toFixed(2)} Sharpe ratio. Profit factor of ${stats.profitFactor.toFixed(2)} with ${stats.winRate.toFixed(1)}% win rate ${viable ? 'suggests the strategy has an edge worth exploring in live conditions with proper position sizing' : 'indicates further optimization of entries and exits is recommended before live deployment'}. Consider testing on additional timeframes and market conditions for robustness.`;
 }

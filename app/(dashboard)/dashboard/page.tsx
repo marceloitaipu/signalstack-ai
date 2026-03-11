@@ -5,10 +5,10 @@ import { generateAISignal } from '@/lib/ai';
 import { getLocale, t } from '@/lib/i18n';
 
 export default async function DashboardPage() {
+  const locale = await getLocale();
   const market = await getMarketSnapshot();
   const candles = await fetchCandles('BTC/USDT', '1h', 200);
-  const signal = await generateAISignal(candles, 'BTC/USDT');
-  const locale = await getLocale();
+  const signal = await generateAISignal(candles, 'BTC/USDT', locale);
 
   const sideColor = signal.side === 'LONG' ? 'text-emerald-400' : signal.side === 'SHORT' ? 'text-rose-400' : 'text-amber-300';
 

@@ -10,7 +10,7 @@ export default async function AISignalsPage() {
   const locale = await getLocale();
   const market = await getMarketSnapshot();
   const candles = await fetchCandles('BTC/USDT', '1h', 200);
-  const signal = await generateAISignal(candles, 'BTC/USDT');
+  const signal = await generateAISignal(candles, 'BTC/USDT', locale);
 
   const sideColor = signal.side === 'LONG' ? 'text-emerald-400' : signal.side === 'SHORT' ? 'text-rose-400' : 'text-amber-300';
   const sideBg = signal.side === 'LONG' ? 'bg-emerald-400/10 border-emerald-400/25' : signal.side === 'SHORT' ? 'bg-rose-400/10 border-rose-400/25' : 'bg-amber-400/10 border-amber-400/25';
