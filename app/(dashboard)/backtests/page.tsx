@@ -53,14 +53,14 @@ export default async function BacktestsPage({ searchParams }: { searchParams?: P
 
       {/* AI Backtest Result */}
       {aiResult && (
-        <SectionCard title={`🧠 AI Backtest — ${aiResult.symbol} · ${aiResult.timeframe}`} description={aiResult.period}>
+        <SectionCard title={`${t(locale, 'bt.ai_result_title')} — ${aiResult.symbol} · ${aiResult.timeframe}`} description={aiResult.period}>
           <div className="grid gap-4 md:grid-cols-4 lg:grid-cols-5">
             {[
               [t(locale, 'bt.th_trades'), aiResult.totalTrades],
               [t(locale, 'bt.th_winrate'), `${aiResult.winRate}%`],
               [t(locale, 'bt.th_return'), `${aiResult.netReturn}%`],
               [t(locale, 'bt.th_drawdown'), `${aiResult.maxDrawdown}%`],
-              ['Sharpe', aiResult.sharpeRatio],
+              [t(locale, 'bt.sharpe'), aiResult.sharpeRatio],
               [t(locale, 'bt.profit_factor'), aiResult.profitFactor],
               [t(locale, 'bt.avg_win'), `${aiResult.avgWin}%`],
               [t(locale, 'bt.avg_loss'), `${aiResult.avgLoss}%`],
@@ -93,7 +93,7 @@ export default async function BacktestsPage({ searchParams }: { searchParams?: P
                     <th>{t(locale, 'bt.side')}</th>
                     <th>{t(locale, 'ai.entry')}</th>
                     <th>{t(locale, 'bt.exit')}</th>
-                    <th>PnL</th>
+                    <th>{t(locale, 'bt.pnl')}</th>
                     <th>{t(locale, 'bt.bars')}</th>
                     <th>{t(locale, 'bt.reason')}</th>
                   </tr>

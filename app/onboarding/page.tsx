@@ -62,7 +62,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams?: 
             </label>
             <label className="rounded-3xl border border-white/10 bg-slate-950/70 p-5 text-slate-300">
               <div className="flex items-center justify-between"><span>{t(locale, 'onboard.telegram')}</span><input type="checkbox" name="telegramEnabled" defaultChecked={prefs?.telegramEnabled ?? false} /></div>
-              <input name="telegramChatId" defaultValue={prefs?.telegramChatId ?? ''} placeholder="Telegram chat id" className="mt-4 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-white" />
+              <input name="telegramChatId" defaultValue={prefs?.telegramChatId ?? ''} placeholder={t(locale, 'onboard.telegram_placeholder')} className="mt-4 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-white" />
             </label>
             <label className="md:col-span-2 rounded-3xl border border-white/10 bg-slate-950/70 p-5 text-slate-300">
               <div>{t(locale, 'onboard.watchlist')}</div>

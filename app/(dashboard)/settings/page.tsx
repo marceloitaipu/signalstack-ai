@@ -13,8 +13,8 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
   const locale = await getLocale();
 
   const plans = [
-    { label: 'PRO', price: '$29/mo', desc: t(locale, 'settings.pro_desc') },
-    { label: 'DESK', price: '$99/mo', desc: t(locale, 'settings.desk_desc') }
+    { label: 'PRO', price: t(locale, 'settings.price_pro'), desc: t(locale, 'settings.pro_desc') },
+    { label: 'DESK', price: t(locale, 'settings.price_desk'), desc: t(locale, 'settings.desk_desc') }
   ];
 
   return (
@@ -83,7 +83,7 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
                 <span>{t(locale, 'settings.telegram_alerts')}</span>
                 <input type="checkbox" name="telegramEnabled" defaultChecked={notificationPreference?.telegramEnabled ?? false} />
               </div>
-              <input name="telegramChatId" defaultValue={notificationPreference?.telegramChatId ?? ''} placeholder="chat id" className="mt-4 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-white" />
+              <input name="telegramChatId" defaultValue={notificationPreference?.telegramChatId ?? ''} placeholder={t(locale, 'settings.chat_placeholder')} className="mt-4 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-white" />
             </label>
 
             <label className="rounded-3xl border border-white/10 bg-slate-950/70 p-5 text-slate-300">
@@ -115,7 +115,7 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
                     <td>{delivery.createdAt.toISOString().slice(0, 16).replace('T', ' ')}</td>
                     <td>{delivery.channel}</td>
                     <td>{delivery.status}</td>
-                    <td>{delivery.destination ?? 'in-app'}</td>
+                    <td>{delivery.destination ?? t(locale, 'common.in_app')}</td>
                   </tr>
                 ))}
               </tbody>

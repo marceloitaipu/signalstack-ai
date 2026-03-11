@@ -49,9 +49,9 @@ export default async function AdminPage() {
         </SectionCard>
         <SectionCard title={t(locale, 'admin.mix_title')} description={t(locale, 'admin.mix_desc')}>
           <div className="space-y-3 text-slate-300">
-            <div className="flex justify-between"><span>Free</span><span>{planMap.FREE || 0}</span></div>
-            <div className="flex justify-between"><span>Pro</span><span>{planMap.PRO || 0}</span></div>
-            <div className="flex justify-between"><span>Desk</span><span>{planMap.DESK || 0}</span></div>
+            <div className="flex justify-between"><span>{t(locale, 'home.plan_free')}</span><span>{planMap.FREE || 0}</span></div>
+            <div className="flex justify-between"><span>{t(locale, 'home.plan_pro')}</span><span>{planMap.PRO || 0}</span></div>
+            <div className="flex justify-between"><span>{t(locale, 'home.plan_desk')}</span><span>{planMap.DESK || 0}</span></div>
           </div>
         </SectionCard>
         <SectionCard title={t(locale, 'admin.health_title')} description={t(locale, 'admin.health_desc')}>
@@ -88,7 +88,7 @@ export default async function AdminPage() {
                   <tr key={delivery.id}>
                     <td>{delivery.channel}</td>
                     <td>{delivery.status}</td>
-                    <td>{delivery.destination ?? 'in-app'}</td>
+                    <td>{delivery.destination ?? t(locale, 'common.in_app')}</td>
                     <td>{delivery.createdAt.toISOString().slice(0, 16).replace('T', ' ')}</td>
                   </tr>
                 ))}

@@ -92,7 +92,7 @@ export default async function AISignalsPage() {
             </div>
             <div className="flex items-center justify-between rounded-2xl border border-white/8 bg-slate-950/60 px-5 py-3">
               <span className="text-slate-400">{t(locale, 'ai.volume_spike')}</span>
-              <span className={signal.indicators.volumeSpike ? 'text-emerald-400' : 'text-slate-500'}>{signal.indicators.volumeSpike ? '✓ Yes' : '✗ No'}</span>
+              <span className={signal.indicators.volumeSpike ? 'text-emerald-400' : 'text-slate-500'}>{signal.indicators.volumeSpike ? t(locale, 'common.yes') : t(locale, 'common.no')}</span>
             </div>
             <div className="flex items-center justify-between rounded-2xl border border-white/8 bg-slate-950/60 px-5 py-3">
               <span className="text-slate-400">{t(locale, 'ai.support')}</span>

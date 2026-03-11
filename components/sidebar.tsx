@@ -27,7 +27,7 @@ export async function Sidebar() {
       {/* Sidebar overlay + panel */}
       <aside id="sidebar-panel" className="fixed inset-y-0 left-0 z-50 w-72 -translate-x-full border-r border-white/10 bg-slate-950/95 p-6 text-slate-200 backdrop-blur-xl transition-transform duration-200 lg:static lg:z-auto lg:translate-x-0 lg:bg-slate-950/55">
         <div className="flex items-center justify-between lg:hidden">
-          <div className="text-sm font-semibold text-cyan-300">Menu</div>
+          <div className="text-sm font-semibold text-cyan-300">{t(locale, 'sidebar.menu')}</div>
           <SidebarToggle isClose />
         </div>
 

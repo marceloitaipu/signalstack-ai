@@ -347,6 +347,34 @@ const dict = {
   'ai.bt_desc': { en: 'Run the AI strategy engine against historical candles and get instant analytics.', pt: 'Execute o motor de estratégia IA contra candles históricos e obtenha análises instantâneas.' },
   'ai.run_bt': { en: '🧠 Run AI Backtest', pt: '🧠 Executar Backtest IA' },
   'sidebar.ai_signals': { en: '🧠 AI Signals', pt: '🧠 Sinais IA' },
+  'sidebar.menu': { en: 'Menu', pt: 'Menu' },
+
+  // ── Homepage extras ───────────────────────────────────────────────────────
+  'home.entry': { en: 'Entry', pt: 'Entrada' },
+  'home.stop_loss': { en: 'Stop Loss', pt: 'Stop Loss' },
+  'home.take_profit': { en: 'Take Profit', pt: 'Take Profit' },
+  'home.trend': { en: 'Trend', pt: 'Tendência' },
+  'home.vol_spike': { en: 'Vol. Spike', pt: 'Volume' },
+  'home.how_ai': { en: 'How the AI works', pt: 'Como a IA funciona' },
+  'home.how_ai_sub': { en: 'From signal to execution in 3 steps', pt: 'Do sinal à execução em 3 passos' },
+  'home.step': { en: 'Step', pt: 'Passo' },
+  'home.ai_step1_title': { en: 'Multi-Factor Analysis', pt: 'Análise Multi-Fator' },
+  'home.ai_step1_desc': { en: 'The AI engine analyzes 8+ technical indicators in real-time: EMAs, RSI, ATR, volume, support & resistance, trend alignment.', pt: 'O motor IA analisa 8+ indicadores técnicos em tempo real: EMAs, RSI, ATR, volume, suporte e resistência, alinhamento de tendência.' },
+  'home.ai_step2_title': { en: 'GPT-4o Insight', pt: 'Insight GPT-4o' },
+  'home.ai_step2_desc': { en: 'Every signal gets a deep GPT analysis covering entry timing, risk factors, confirmation triggers and invalidation levels.', pt: 'Cada sinal recebe uma análise profunda do GPT cobrindo timing de entrada, fatores de risco, gatilhos de confirmação e níveis de invalidação.' },
+  'home.ai_step3_title': { en: 'Entry, Stop & Target', pt: 'Entrada, Stop & Alvo' },
+  'home.ai_step3_desc': { en: 'Entry, stop-loss and take-profit levels calculated via ATR with optimized risk:reward. Backtest with full trade log.', pt: 'Pontos de entrada, stop-loss e take-profit calculados por ATR com risco:retorno otimizado. Backtest com log completo de trades.' },
+  'home.metrics_indicators': { en: 'Technical Indicators', pt: 'Indicadores Técnicos' },
+  'home.metrics_signals': { en: 'Signal Types', pt: 'Tipos de Sinal' },
+  'home.metrics_backtest': { en: 'Backtest Metrics', pt: 'Métricas de Backtest' },
+  'home.metrics_ai': { en: 'AI-Powered', pt: 'Potência IA' },
+  'home.metrics_rr': { en: 'Risk : Reward', pt: 'Risco : Retorno' },
+  'home.hero_stat1': { en: 'AI Engine', pt: 'Motor IA' },
+  'home.hero_stat1_label': { en: 'multi-factor scoring', pt: 'pontuação multi-fator' },
+  'home.hero_stat2': { en: '8+ indicators', pt: '8+ indicadores' },
+  'home.hero_stat2_label': { en: 'EMA, RSI, ATR, volume & more', pt: 'EMA, RSI, ATR, volume e mais' },
+  'home.hero_stat3': { en: 'GPT-4o', pt: 'GPT-4o' },
+  'home.hero_stat3_label': { en: 'market analysis powered', pt: 'análise de mercado por IA' },
 
   // ── Backtest AI extras ────────────────────────────────────────────────────
   'bt.ai_run_title': { en: '🧠 AI Backtest', pt: '🧠 Backtest com IA' },
@@ -361,6 +389,22 @@ const dict = {
   'bt.exit': { en: 'Exit', pt: 'Saída' },
   'bt.bars': { en: 'Bars', pt: 'Barras' },
   'bt.reason': { en: 'Reason', pt: 'Motivo' },
+  'bt.pnl': { en: 'PnL', pt: 'L/P' },
+  'bt.sharpe': { en: 'Sharpe', pt: 'Sharpe' },
+  'bt.ai_result_title': { en: '🧠 AI Backtest', pt: '🧠 Backtest IA' },
+
+  // ── Common / shared ───────────────────────────────────────────────────────
+  'common.in_app': { en: 'in-app', pt: 'no app' },
+  'common.yes': { en: '✓ Yes', pt: '✓ Sim' },
+  'common.no': { en: '✗ No', pt: '✗ Não' },
+
+  // ── Settings extras ───────────────────────────────────────────────────────
+  'settings.price_pro': { en: '$29/mo', pt: 'R$29/mês' },
+  'settings.price_desk': { en: '$99/mo', pt: 'R$99/mês' },
+  'settings.chat_placeholder': { en: 'chat id', pt: 'chat id' },
+
+  // ── Onboarding extras ─────────────────────────────────────────────────────
+  'onboard.telegram_placeholder': { en: 'Telegram chat id', pt: 'Chat id do Telegram' },
 
   // ── Language ──────────────────────────────────────────────────────────────
   'lang.en': { en: 'English', pt: 'English' },
