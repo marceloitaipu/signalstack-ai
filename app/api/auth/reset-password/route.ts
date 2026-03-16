@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { hashToken } from '@/lib/tokens';
 import { consumeRateLimit } from '@/lib/rate-limit';
 import { resetPasswordSchema, parseFormData } from '@/lib/validations';
+import { audit } from '@/lib/audit';
 
 export async function POST(request: Request) {
   const ip = request.headers.get('x-forwarded-for') || 'local';
@@ -26,6 +27,7 @@ export async function POST(request: Request) {
   const passwordHash = await bcrypt.hash(password, 12);
   await prisma.user.update({ where: { id: record.userId }, data: { passwordHash } });
   await prisma.passwordResetToken.update({ where: { id: record.id }, data: { usedAt: new Date() } });
+  audit({ userId: record.userId, action: 'auth.password_reset', ip });
 
   return Response.redirect(new URL('/login?reset=1', request.url));
 }

@@ -3,6 +3,7 @@ import { ok, fail } from '@/lib/api';
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { PLAN_LIMITS } from '@/lib/plans';
+import { audit } from '@/lib/audit';
 
 function pseudoStats(symbol: string, timeframe: string) {
   const seed = symbol.length * 7 + timeframe.length * 11;
@@ -36,5 +37,6 @@ export async function POST(request: Request) {
   const stats = pseudoStats(symbol, timeframe);
 
   await prisma.backtest.create({ data: { userId: session.sub, symbol, timeframe, ...stats } });
+  audit({ userId: session.sub, action: 'backtest.created', target: `${symbol} ${timeframe}` });
   redirect('/backtests');
 }

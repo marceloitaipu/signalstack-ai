@@ -1,6 +1,8 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -33,6 +35,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale === 'pt' ? 'pt-BR' : 'en'}>
       <body>
         {children}
+        <Analytics />
+        <SpeedInsights />
         <FloatingLanguageSwitcher current={locale} />
         <Script id="sw-register" strategy="afterInteractive">{`
           if ('serviceWorker' in navigator) {

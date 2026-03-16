@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { signSession, setAuthCookie } from '@/lib/auth';
 import { consumeRateLimit } from '@/lib/rate-limit';
 import { createPlainToken, hashToken, expiresInHours } from '@/lib/tokens';
+import { audit } from '@/lib/audit';
 
 async function sendVerifyEmail(email: string, verifyUrl: string) {
   const apiKey = process.env.RESEND_API_KEY;
@@ -58,5 +59,6 @@ export async function POST(request: Request) {
 
   const token = signSession({ sub: user.id, email: user.email, role: user.role, plan: user.plan });
   await setAuthCookie(token);
+  audit({ userId: user.id, action: 'auth.register', ip });
   return Response.redirect(new URL('/onboarding?welcome=1', request.url));
 }

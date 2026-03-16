@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/db';
+import { audit } from '@/lib/audit';
 
 export async function POST(request: Request) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -50,6 +51,7 @@ export async function POST(request: Request) {
         }
       });
       await prisma.user.update({ where: { id: userId }, data: { plan: plan === 'DESK' ? 'DESK' : 'PRO' } });
+      audit({ userId, action: 'billing.plan_changed', target: plan, meta: { via: 'checkout' } });
     }
   }
 
@@ -71,6 +73,7 @@ export async function POST(request: Request) {
       });
       if (event.type === 'customer.subscription.deleted') {
         await prisma.user.update({ where: { id: sub.userId }, data: { plan: 'FREE' } });
+        audit({ userId: sub.userId, action: 'billing.plan_changed', target: 'FREE', meta: { via: 'subscription_deleted' } });
       }
     }
   }
@@ -84,6 +87,7 @@ export async function POST(request: Request) {
       if (sub) {
         await prisma.subscription.update({ where: { id: sub.id }, data: { status: 'past_due' } });
         await prisma.user.update({ where: { id: sub.userId }, data: { plan: 'FREE' } });
+        audit({ userId: sub.userId, action: 'billing.payment_failed', meta: { invoiceId: (invoice as any).id } });
       }
     }
   }

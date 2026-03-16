@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { signSession, setAuthCookie } from '@/lib/auth';
 import { consumeRateLimit } from '@/lib/rate-limit';
 import { loginSchema, parseFormData } from '@/lib/validations';
+import { audit } from '@/lib/audit';
 
 export async function POST(request: Request) {
   const ip = request.headers.get('x-forwarded-for') || 'local';
@@ -17,11 +18,18 @@ export async function POST(request: Request) {
   const { email, password } = parsed.data;
 
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) return Response.redirect(new URL('/login?error=invalid', request.url));
+  if (!user) {
+    audit({ action: 'auth.login_failed', target: email, ip });
+    return Response.redirect(new URL('/login?error=invalid', request.url));
+  }
 
   const ok = await bcrypt.compare(password, user.passwordHash);
-  if (!ok) return Response.redirect(new URL('/login?error=invalid', request.url));
+  if (!ok) {
+    audit({ userId: user.id, action: 'auth.login_failed', target: email, ip });
+    return Response.redirect(new URL('/login?error=invalid', request.url));
+  }
 
+  audit({ userId: user.id, action: 'auth.login', ip });
   const token = signSession({ sub: user.id, email: user.email, role: user.role, plan: user.plan });
   await setAuthCookie(token);
   return Response.redirect(new URL('/dashboard', request.url));

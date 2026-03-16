@@ -4,6 +4,7 @@ import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { canUseChannel, PLAN_LIMITS } from '@/lib/plans';
 import { createAlertSchema, parseFormData } from '@/lib/validations';
+import { audit } from '@/lib/audit';
 
 export async function GET() {
   const session = await getSession();
@@ -33,6 +34,7 @@ export async function POST(request: Request) {
   await prisma.alert.create({
     data: { userId: session.sub, symbol, timeframe, condition, channel, severity }
   });
+  audit({ userId: session.sub, action: 'alert.created', target: `${symbol} ${timeframe}` });
 
   redirect('/alerts?created=1');
 }

@@ -3,6 +3,7 @@ import { getFreshSession } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { getStripe, PRICE_MAP } from '@/lib/stripe';
 import { checkoutSchema, parseFormData } from '@/lib/validations';
+import { audit } from '@/lib/audit';
 
 export async function POST(request: Request) {
   const session = await getFreshSession();
@@ -48,6 +49,7 @@ export async function POST(request: Request) {
     update: { userId: session.sub, status: 'checkout_created', priceId },
     create: { userId: session.sub, stripeCheckoutId: checkoutSession.id, status: 'checkout_created', priceId }
   });
+  audit({ userId: session!.sub, action: 'billing.checkout', target: requestedPlan });
 
   redirect(checkoutSession.url!);
 }
