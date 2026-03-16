@@ -3,10 +3,15 @@ import { Plan, AlertChannel } from '@prisma/client';
 export type { Plan, AlertChannel } from '@prisma/client';
 export type { AlertSeverity, DeliveryStatus, UserRole } from '@prisma/client';
 
-export const PLAN_LIMITS: Record<Plan, { alerts: number; channels: AlertChannel[] }> = {
-  FREE: { alerts: 3, channels: ['IN_APP'] },
-  PRO: { alerts: 25, channels: ['IN_APP', 'EMAIL', 'TELEGRAM'] },
-  DESK: { alerts: 250, channels: ['IN_APP', 'EMAIL', 'TELEGRAM'] }
+export const PLAN_LIMITS: Record<Plan, {
+  alerts: number;
+  channels: AlertChannel[];
+  backtests: number;
+  watchlistSymbols: number;
+}> = {
+  FREE: { alerts: 3, channels: ['IN_APP'], backtests: 2, watchlistSymbols: 5 },
+  PRO: { alerts: 25, channels: ['IN_APP', 'EMAIL', 'TELEGRAM'], backtests: 50, watchlistSymbols: 25 },
+  DESK: { alerts: 250, channels: ['IN_APP', 'EMAIL', 'TELEGRAM'], backtests: 500, watchlistSymbols: 100 }
 };
 
 export function planPriceLabel(plan: Plan) {

@@ -2,17 +2,19 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { signSession, setAuthCookie } from '@/lib/auth';
 import { consumeRateLimit } from '@/lib/rate-limit';
+import { loginSchema, parseFormData } from '@/lib/validations';
 
 export async function POST(request: Request) {
   const ip = request.headers.get('x-forwarded-for') || 'local';
-  const gate = consumeRateLimit(`login:${ip}`, 10, 15 * 60 * 1000);
+  const gate = await consumeRateLimit(`login:${ip}`, 10, 15 * 60 * 1000);
   if (!gate.ok) {
     return Response.redirect(new URL('/login?error=rate_limited', request.url));
   }
 
   const formData = await request.formData();
-  const email = String(formData.get('email') || '').toLowerCase().trim();
-  const password = String(formData.get('password') || '');
+  const parsed = parseFormData(loginSchema, formData);
+  if (!parsed.success) return Response.redirect(new URL('/login?error=invalid_input', request.url));
+  const { email, password } = parsed.data;
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) return Response.redirect(new URL('/login?error=invalid', request.url));

@@ -1,15 +1,18 @@
 import { redirect } from 'next/navigation';
-import { getSession } from '@/lib/auth';
+import { getFreshSession } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { getStripe, PRICE_MAP } from '@/lib/stripe';
+import { checkoutSchema, parseFormData } from '@/lib/validations';
 
 export async function POST(request: Request) {
-  const session = await getSession();
+  const session = await getFreshSession();
   if (!session) redirect('/login');
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const formData = await request.formData();
-  const requestedPlan = String(formData.get('plan') || 'PRO').toUpperCase() as 'PRO' | 'DESK';
+  const parsed = parseFormData(checkoutSchema, formData);
+  if (!parsed.success) redirect('/settings?billing=invalid_plan');
+  const requestedPlan = parsed.data.plan;
   const stripe = getStripe();
 
   if (!stripe) {

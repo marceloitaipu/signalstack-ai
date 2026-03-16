@@ -9,10 +9,9 @@ out/
 *.db
 *.db-journal
 
-# env
+# env — block ALL .env variants
 .env
-.env.local
-.env.production
+.env.*
 
 # build
 dist/
@@ -21,4 +20,9 @@ dist/
 .DS_Store
 *.tsbuildinfo
 next-env.d.ts
+
+# deploy
 .vercel
+
+# prisma local db
+prisma/dev.db

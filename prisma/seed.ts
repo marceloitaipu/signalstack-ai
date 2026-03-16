@@ -1,15 +1,26 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { prisma } from '../lib/db';
 
 async function main() {
-  const passwordHash = await bcrypt.hash('admin123456', 10);
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@signalstack.ai';
+  const adminPassword = process.env.ADMIN_PASSWORD || crypto.randomBytes(16).toString('hex');
+  const passwordHash = await bcrypt.hash(adminPassword, 12);
+
+  console.log('──────────────────────────────────────');
+  console.log(`Admin email   : ${adminEmail}`);
+  if (!process.env.ADMIN_PASSWORD) {
+    console.log(`Admin password: ${adminPassword}`);
+    console.log('⚠  Save this password! It was randomly generated.');
+  }
+  console.log('──────────────────────────────────────');
 
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@signalstack.ai' },
+    where: { email: adminEmail },
     update: { name: 'Admin', role: 'ADMIN', passwordHash, plan: 'DESK' },
     create: {
       name: 'Admin',
-      email: 'admin@signalstack.ai',
+      email: adminEmail,
       passwordHash,
       role: 'ADMIN',
       plan: 'DESK'

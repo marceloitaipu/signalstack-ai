@@ -3,6 +3,7 @@ import { ok, fail } from '@/lib/api';
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { canUseChannel, PLAN_LIMITS } from '@/lib/plans';
+import { createAlertSchema, parseFormData } from '@/lib/validations';
 
 export async function GET() {
   const session = await getSession();
@@ -16,11 +17,9 @@ export async function POST(request: Request) {
   if (!session) return fail('Unauthorized', 401);
 
   const formData = await request.formData();
-  const symbol = String(formData.get('symbol') || '').trim();
-  const timeframe = String(formData.get('timeframe') || '').trim();
-  const condition = String(formData.get('condition') || '').trim();
-  const channel = String(formData.get('channel') || 'IN_APP').toUpperCase();
-  const severity = String(formData.get('severity') || 'STANDARD').toUpperCase();
+  const parsed = parseFormData(createAlertSchema, formData);
+  if (!parsed.success) return fail(parsed.error, 400);
+  const { symbol, timeframe, condition, channel, severity } = parsed.data;
 
   const existingCount = await prisma.alert.count({ where: { userId: session.sub } });
   if (existingCount >= PLAN_LIMITS[session.plan].alerts) {
@@ -32,7 +31,7 @@ export async function POST(request: Request) {
   }
 
   await prisma.alert.create({
-    data: { userId: session.sub, symbol, timeframe, condition, channel: channel as any, severity: severity as any }
+    data: { userId: session.sub, symbol, timeframe, condition, channel, severity }
   });
 
   redirect('/alerts?created=1');

@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db';
 import { ok, fail } from '@/lib/api';
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import { PLAN_LIMITS } from '@/lib/plans';
 
 function pseudoStats(symbol: string, timeframe: string) {
   const seed = symbol.length * 7 + timeframe.length * 11;
@@ -23,9 +24,15 @@ export async function GET() {
 export async function POST(request: Request) {
   const session = await getSession();
   if (!session) return fail('Unauthorized', 401);
+
+  const count = await prisma.backtest.count({ where: { userId: session.sub } });
+  if (count >= PLAN_LIMITS[session.plan].backtests) {
+    redirect('/backtests?error=limit');
+  }
+
   const formData = await request.formData();
-  const symbol = String(formData.get('symbol') || 'BTC/USDT');
-  const timeframe = String(formData.get('timeframe') || '1h');
+  const symbol = String(formData.get('symbol') || 'BTC/USDT').trim().toUpperCase().slice(0, 20);
+  const timeframe = String(formData.get('timeframe') || '1h').trim().slice(0, 10);
   const stats = pseudoStats(symbol, timeframe);
 
   await prisma.backtest.create({ data: { userId: session.sub, symbol, timeframe, ...stats } });
